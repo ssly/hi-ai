@@ -1,17 +1,20 @@
-const OpenAI = require("./node_modules/openai"); 
+const OpenAI = require("./lib/openai");
 
-const token = process.env["GITHUB_TOKEN"];
+// const token = process.env["GITHUB_TOKEN"];
 const endpoint = "https://models.inference.ai.azure.com";
 const modelName = "gpt-4o-mini";
 
-
 async function queryAnswer(question, model = modelName) {
+  // 从 utools 中获取 token
+  const dbData = (await utools.db.get("githubToken")) || {};
+  console.log("dbData", dbData);
+  const token = dbData.data || "";
   const client = new OpenAI({
     baseURL: endpoint,
     apiKey: token,
-    dangerouslyAllowBrowser: true // 添加这一行
+    dangerouslyAllowBrowser: true, // 添加这一行
   });
-  console.log('question', question, model, client.chat);
+  console.log("question", question, model, client.chat);
   const response = await client.chat.completions.create({
     // messages: [
     //   // { role: "system", content: "You are a helpful assistant." },
@@ -21,15 +24,15 @@ async function queryAnswer(question, model = modelName) {
     model,
     temperature: 1.0,
     max_tokens: 1000,
-    top_p: 1.0
+    top_p: 1.0,
   });
 
   console.log(response.choices);
   return {
     model,
     stream: false,
-    role: 'assistant',
-    content: response.choices[0].message.content
+    role: "assistant",
+    content: response.choices[0].message.content,
   };
 }
 
@@ -38,5 +41,5 @@ async function queryAnswer(question, model = modelName) {
 // });
 
 module.exports = {
-  queryAnswer
-}
+  queryAnswer,
+};

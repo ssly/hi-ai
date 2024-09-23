@@ -1,0 +1,23 @@
+{
+  "main": "renderer/index.html",
+  "development": {
+    "main": "http://localhost:5173/index.html"
+  },
+  "preload": "preload.js",
+  "logo": "hi-ai.jpg",
+  "description": "",
+  "features": [
+    {
+      "code": "HIAI",
+      "explain": "你好AI",
+      "cmds": [
+        "AI",
+        {
+          "type": "regex",
+          "label": "你好AI",
+          "match": "/^.{5,}$/"
+        }
+      ]
+    }
+  ]
+}

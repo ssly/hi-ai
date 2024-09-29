@@ -5,13 +5,14 @@ const listeners = {}
 let pluginEnterData = {}
 
 const openai = require('./openai-js')
+const groq = require('./groq')
 
 
 // uTools API onPluginEnter(callback)
 // type 为 "text"、"regex"、 "over" 时， payload 值为进入插件应用时的主输入框文本
 utools.onPluginEnter(({ code, type, payload }) => {
   pluginEnterData = { code, type, payload }
-
+  console.log('pluginEnterData', pluginEnterData)
 })
 
 window.services = {
@@ -19,6 +20,8 @@ window.services = {
   copyText: text => utools.copyText(text),
 
   queryAnswer: openai.queryAnswer,
+  queryAnswerStream: openai.queryAnswerStream,
+  queryAnswerStreamByGroq: groq.queryAnswerStream,
 
   // 显示通知
   showNotification: (content) => {
@@ -28,6 +31,8 @@ window.services = {
 
   // 获取插件进入数据
   getPluginEnterData: () => pluginEnterData,
+
+  shellOpenExternal: url => utools.shellOpenExternal(url),
 
   // 操作数据库
   db: utools.db,

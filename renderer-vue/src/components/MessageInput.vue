@@ -1,8 +1,8 @@
 <!-- MessageInput.vue -->
 <script setup>
 import { ref, defineEmits, defineProps, watch } from 'vue'
-import { reactive } from 'vue';
-import ModelSelect from './ModelSelect.vue';
+import { reactive } from 'vue'
+import ModelSelect from './ModelSelect.vue'
 
 const props = defineProps({
   currentSessionId: {
@@ -33,10 +33,10 @@ watch(
   () => {
     // 清空message
     message.value = ''
-  },
+  }
 )
 
-const handleSend = (e) => {
+const handleSend = e => {
   // 没有消息，不能发送
   if (!message.value.trim() || props.sending) return
   if (e) {
@@ -44,13 +44,13 @@ const handleSend = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       console.log('handleSend11', message.value.trim())
-      emit('send', message.value.trim())
+      emit('send', message.value.trim(), formData.model)
 
       // 清空message
       message.value = ''
     }
   } else {
-    emit('send', message.value.trim())
+    emit('send', message.value.trim(), formData.model)
 
     // 清空message
     message.value = ''
@@ -64,24 +64,18 @@ const handleSend = (e) => {
       <textarea
         v-model="message"
         class="msg-input-textarea"
-        placeholder="向 AI 发送消息"
+        :placeholder="`向 ${formData.model} 发送消息`"
         @compositionstart="isComposition = true"
         @compositionend="isComposition = false"
         @keydown="handleSend"
       ></textarea>
-      <button
-        :disabled="sending || !message.trim()"
-        class="msg-input-button"
-        @click.stop="handleSend(false)"
-      >
+      <button :disabled="sending || !message.trim()" class="msg-input-button" @click.stop="handleSend(false)">
         发送
       </button>
     </div>
     <div class="msg-tips">
-      <ModelSelect v-model:platform="formData.platform" v-model:model="formData.model" />
-      <div class="msg-tips-right">
-        Enter发送&nbsp;&nbsp;Shift+Enter换行
-      </div>
+      <ModelSelect v-model:model="formData.model" />
+      <div class="msg-tips-right">Enter发送&nbsp;&nbsp;Shift+Enter换行</div>
     </div>
   </div>
 </template>

@@ -3,13 +3,7 @@
   <div class="chat-window" ref="chatWindow">
     <div class="chat-content">
       <div v-if="messages.length === 0" class="empty-state">
-        <svg
-          class="icon"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          stroke-width="1"
-        >
+        <svg class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
           <path
             stroke-linecap="round"
             stroke-linejoin="round"
@@ -18,18 +12,25 @@
         </svg>
         <p class="title">暂无消息</p>
         <p class="subtitle">可以在输入框中输入你的问题，AI助手会尽力给出回答。</p>
+        <p class="subtitle">
+          请注意，一个会话窗口里面的内容会做为一个整体一起问AI，如果问的问题和当前上下文无关，建议新创建会话
+        </p>
       </div>
       <div v-else v-for="message in messages" :key="message.id">
-        <div
-          class="message"
-          :class="{ user: message.role === 'user', assistant: message.role === 'assistant' }"
-        >
-          <p v-html="renderMarkdown(message.content)"></p>
+        <div class="message" :class="{ user: message.role === 'user', assistant: message.role === 'assistant' }">
+          <p v-if="message.role === 'user'">{{ message.content }}</p>
+          <p v-else v-html="marked(message.content)"></p>
         </div>
       </div>
       <div v-if="showScrollToBottomBtn" class="scroll-to-bottom" @click="scrollToBottom">
         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 5L12 19M12 19L19 12M12 19L5 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path
+            d="M12 5L12 19M12 19L19 12M12 19L5 12"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
         </svg>
       </div>
     </div>
@@ -46,10 +47,6 @@ const props = defineProps({
     required: true,
   },
 })
-
-const renderMarkdown = (content) => {
-  return marked(content)
-}
 
 const chatWindow = ref(null)
 const showScrollToBottomBtn = ref(false)
@@ -92,14 +89,14 @@ const throttledScrollToBottom = throttle(async () => {
 
 watch(
   () => props.messages[props.messages.length - 1],
-  async (newMessage) => {
+  async newMessage => {
     if (newMessage) {
       /**
        * 1. 用户信息直接滚动到底部
        * 2. 机器人的消息要当前消息距离底部小于50px时，才自动滚动到底部
        */
       if (newMessage.role === 'assistant') {
-        throttledScrollToBottom();
+        throttledScrollToBottom()
       } else if (newMessage.role === 'user') {
         await nextTick()
         scrollToBottom()
@@ -116,7 +113,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  chatWindow.value && chatWindow.value.removeEventListener('scroll', handleScroll)  
+  chatWindow.value && chatWindow.value.removeEventListener('scroll', handleScroll)
 })
 </script>
 
@@ -132,6 +129,7 @@ onUnmounted(() => {
 .chat-content {
   max-width: 800px;
   margin: 0 auto;
+  height: 100%;
 }
 
 @media (min-width: 1200px) {
@@ -170,7 +168,8 @@ onUnmounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 400px;
+  min-height: 300px;
+  height: 100%;
   padding: 1rem;
   background-color: #f9fafb;
   border-radius: 0.5rem;

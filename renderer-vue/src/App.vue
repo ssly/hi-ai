@@ -10,6 +10,8 @@ let sendingMessage = ref(false)
 
 let showGuide = ref(true)
 
+const supportStreamModels = ['gpt-4o-mini', 'gpt-4o']
+
 const answerMessage = ref({
   role: 'assistant',
   content: '',
@@ -28,7 +30,7 @@ let sessionsRev = undefined
 async function updateConfig(src = aiConfig) {
   // 先拿到配置
   const oldConfig = (await datebase.get('aiConfig')) || {}
-  console.log('oldConfig', src, oldConfig)
+  console.log('App.vue:updateConfig:src and oldConfig', src, oldConfig)
   const newConfig = {
     ...oldConfig,
     ...src,
@@ -41,13 +43,13 @@ async function updateConfig(src = aiConfig) {
       ...JSON.parse(JSON.stringify(newConfig)),
     })
   } catch (error) {
-    console.error('Error updating database:', error)
+    console.error('App.vue:updateConfig:Error updating database:', error)
   }
 }
 
 async function updateDatabase(src = sessions.value) {
   try {
-    console.log('updateDatabase', JSON.parse(JSON.stringify(src)))
+    console.log('App.vue:updateDatabase:src', JSON.parse(JSON.stringify(src)))
     const result = await datebase.put({
       _id: 'aiSessions',
       sessions: JSON.parse(JSON.stringify(src)),
@@ -55,23 +57,28 @@ async function updateDatabase(src = sessions.value) {
     })
     sessionsRev = result.rev
   } catch (error) {
-    console.error('Error updating database:', error)
+    console.error('App.vue:updateDatabase:Error updating database:', error)
   }
 }
 
-watch(currentSessionId, (val) => {
+watch(currentSessionId, val => {
   // 每次切换对话，重置发送状态
   sendingMessage.value = false
   const currentSession = sessions.value[val]
-  console.log('sessions.value[currentSessionId.value]', sessions.value, val, currentSession)
+  console.log(
+    'App.vue:watch:currentSessionId:sessions.value[currentSessionId.value]',
+    sessions.value,
+    val,
+    currentSession
+  )
   messages.value = currentSession ? currentSession.messages : []
 })
 
-const handleSend = async (content) => {
+const handleSend = async (content, model) => {
   sendingMessage.value = true
   // 先判断是不是创建新对话
   if (currentSessionId.value === -1) {
-    console.log('create new session')
+    console.log('App.vue:handleSend:create new session', content.slice(0, 10), model)
     const name = content.length > 10 ? `${content.slice(0, 10)}...` : content
 
     const id = Date.now()
@@ -86,7 +93,7 @@ const handleSend = async (content) => {
   }
 
   await nextTick()
-  console.log('messages', messages.value)
+  console.log('App.vue:handleSend:messages', messages.value)
   messages.value.push({
     role: 'user',
     content,
@@ -98,38 +105,42 @@ const handleSend = async (content) => {
   answerMessage.value = {
     role: 'assistant',
     content: '',
-    model: 'gpt-4o-mini',
+    model,
     timestamp: anserTime,
   }
   // 需要更新当前对话的时间
   sessions.value[currentSessionId.value].updateTime = anserTime
-
+  const supportStream = supportStreamModels.includes(model)
   try {
-    // const steam = await window.services.queryAnswerStream(
-    //   messages.value,
-    //   'gpt-4o-mini',
-    //   aiConfig.githubToken,
-    // )
-    const steam = await window.services.queryAnswerStreamByGroq(
-      messages.value,
-      undefined,
-      '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',
-    )
-
+    const steam = await window.services.askByOpenAI(messages.value, {
+      model,
+      apiKey: aiConfig.githubToken,
+      stream: supportStream,
+    })
     messages.value.push(answerMessage.value)
-    for await (const chunk of steam) {
-      await new Promise((resolve) => requestAnimationFrame(resolve))
-      const content = chunk.choices[0].delta.content || ''
-      answerMessage.value.content += content
+    console.log('steamis', steam, supportStream)
+
+    if (supportStream) {
+      for await (const chunk of steam) {
+        await new Promise(resolve => requestAnimationFrame(resolve))
+        const content = chunk.choices[0].delta.content || ''
+        answerMessage.value.content += content
+      }
+      answerMessage.value.content += '\n'
+    } else {
+      answerMessage.value.content = steam.choices[0].message.content
     }
+
     sendingMessage.value = false
-    answerMessage.value.content += '\n'
     await updateDatabase()
   } catch (error) {
     console.error('Error querying answer stream:', error)
     console.log('error', error.code)
     console.log('error', error.message)
     alert('出现错误: ' + error.message)
+
+    // 恢复等待发送状态
+    sendingMessage.value = false
   }
 }
 
@@ -167,12 +178,11 @@ function handleChangeToken(val) {
 
 function init() {
   const configData = datebase.get('aiConfig')
-  console.log('aiConfig', configData)
+  console.log('App.vue:init:aiConfig', configData)
   if (configData) {
     aiConfig.githubToken = configData.githubToken
     showGuide.value = false
   } else {
-    console.log('init', configData)
     showGuide.value = true
   }
 }
@@ -183,12 +193,7 @@ init()
 <template>
   <div class="app-container">
     <!-- <HeaderBar /> -->
-    <UserGuide
-      v-if="showGuide"
-      :config="aiConfig"
-      @cancel="showGuide = false"
-      @update="handleChangeToken"
-    />
+    <UserGuide v-if="showGuide" :config="aiConfig" @cancel="showGuide = false" @update="handleChangeToken" />
 
     <div v-else class="main-content">
       <SideNav
@@ -200,11 +205,7 @@ init()
       />
       <div class="chat-area">
         <ChatWindow :messages="messages" />
-        <MessageInput
-          :sending="sendingMessage"
-          :currentSessionId="currentSessionId"
-          @send="handleSend"
-        />
+        <MessageInput :sending="sendingMessage" :currentSessionId="currentSessionId" @send="handleSend" />
       </div>
     </div>
   </div>
@@ -241,6 +242,5 @@ html {
   flex-direction: column;
   flex: 1;
   overflow: hidden;
-  width: calc(100% - 200px); /* Subtracting SideNav width */
 }
 </style>

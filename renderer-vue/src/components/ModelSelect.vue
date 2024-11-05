@@ -1,9 +1,9 @@
 <template>
   <div class="model-select">
-    <select v-model="platform" @change="onPlatformChange">
+    <!-- <select v-model="platform" @change="onPlatformChange">
       <option value="github">Github Models</option>
       <option value="groq">Groq</option>
-    </select>
+    </select> -->
     <select v-model="model">
       <option v-for="option in modelOptions" :key="option.value" :value="option.value">
         {{ option.label }}
@@ -13,54 +13,41 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed } from 'vue'
 
 const props = defineProps({
   platform: String,
   model: String,
-});
+})
 
-const emit = defineEmits(['update:platform', 'update:model']);
+const emit = defineEmits(['update:platform', 'update:model'])
 
 const platform = computed({
   get() {
-    return props.platform;
+    return props.platform
   },
   set(value) {
-    emit('update:platform', value);
+    emit('update:platform', value)
   },
-});
+})
 
 const model = computed({
   get() {
-    return props.model;
+    return props.model
   },
   set(value) {
-    emit('update:model', value);
+    emit('update:model', value)
   },
-});
+})
 
 const modelOptions = computed(() => {
-  if (platform.value === 'github') {
-    return [
-      { value: 'gpt-4o', label: 'gpt-4o' },
-      { value: 'gpt-4o-mini', label: 'gpt-4o-mini' },
-    ];
-  } else {
-    return [
-      { value: 'llama-3.2-90b-vision-preview', label: 'llama-3.2-90b-vision-preview' },
-      { value: 'llama-3.2-11b-vision-preview', label: 'llama-3.2-11b-vision-preview' },
-    ];
-  }
-});
-
-function onPlatformChange() {
-  if (platform.value === 'github') {
-    model.value = 'gpt-4o-mini';
-  } else {
-    model.value = 'llama-3.2-11b-vision-preview';
-  }
-}
+  return [
+    { value: 'gpt-4o-mini', label: 'gpt-4o-mini' },
+    { value: 'gpt-4o', label: 'gpt-4o' },
+    { value: 'o1-mini', label: 'o1-mini' },
+    { value: 'o1-preview', label: 'o1-preview' },
+  ]
+})
 </script>
 
 <style scoped>

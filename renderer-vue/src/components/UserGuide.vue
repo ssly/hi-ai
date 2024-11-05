@@ -23,7 +23,7 @@ watch(
     console.log('config changed', newVal, oldVal)
     aiConfig.githubToken = newVal.githubToken
   },
-  { immediate: true },
+  { immediate: true }
 )
 
 function handleUpdateConfig() {
@@ -76,22 +76,18 @@ function handleCancelConfig() {
       </p>
       <p>
         2. Github Models
-        <a href="javascript:void(0)" @click="handleOpenUrl('https://github.com/marketplace/models')"
-          >申请地址</a
-        >
+        <a href="javascript:void(0)" @click="handleOpenUrl('https://github.com/marketplace/models')">申请地址</a>
       </p>
       <p>
         3. Github Token
-        <a href="javascript:void(0)" @click="handleOpenUrl('https://github.com/settings/tokens')"
-          >获取地址</a
-        >
+        <a href="javascript:void(0)" @click="handleOpenUrl('https://github.com/settings/tokens')">获取地址</a>
         （申请一个classic Tokens，下面权限都可以不勾选）
       </p>
 
       <input v-model="aiConfig.githubToken" type="password" placeholder="输入 Github token" />
     </div>
 
-    <div class="config-section">
+    <!-- <div class="config-section">
       <h2>Groq 配置</h2>
       <p>
         PS: 此 API 调用需要在 uTools 设置里面配置“网络代理”
@@ -103,7 +99,7 @@ function handleCancelConfig() {
         >
       </p>
       <input v-model="aiConfig.MistraToken" type="password" placeholder="输入 Groq API Key" />
-    </div>
+    </div> -->
 
     <!-- <div class="config-section">
       <h2>Meta Configuration</h2>

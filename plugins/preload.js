@@ -1,12 +1,23 @@
 /* global utools */
 
+/*
+
+apiConfig
+{
+  _id: string
+  _rev: string
+  githubToken: string
+  groqApiKey: string
+  modles: string // 逗号分隔
+}
+
+*/
+
 const listeners = {}
 
 let pluginEnterData = {}
 
 const openai = require('./openai-js')
-const groq = require('./groq')
-
 
 // uTools API onPluginEnter(callback)
 // type 为 "text"、"regex"、 "over" 时， payload 值为进入插件应用时的主输入框文本
@@ -19,12 +30,10 @@ window.services = {
   // 复制
   copyText: text => utools.copyText(text),
 
-  queryAnswer: openai.queryAnswer,
-  queryAnswerStream: openai.queryAnswerStream,
-  queryAnswerStreamByGroq: groq.queryAnswerStream,
+  askByOpenAI: openai.askByOpenAI,
 
   // 显示通知
-  showNotification: (content) => {
+  showNotification: content => {
     console.log('xxxxx', content)
     utools.showNotification(content)
   },
@@ -51,6 +60,6 @@ window.services = {
       if (Array.isArray(listeners[key])) {
         listeners[key] = listeners[key].filter(l => l !== listener)
       }
-    }
+    },
   },
 }

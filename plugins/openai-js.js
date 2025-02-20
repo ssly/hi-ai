@@ -1,45 +1,55 @@
-const OpenAI = require("./lib/openai");
+// const OpenAI = require('./lib/openai')
+const OpenAI = require('openai')
+// const https = require('https')
 
-// const token = process.env["GITHUB_TOKEN"];
-const endpoint = "https://models.inference.ai.azure.com";
-const modelName = "gpt-4o-mini";
+const endpoint = 'https://models.inference.ai.azure.com'
+const defaultModel = 'gpt-4o-mini'
 
-async function queryAnswer(question, model = modelName) {
-  // 从 utools 中获取 token
-  const dbData = (await utools.db.get("githubToken")) || {};
-  console.log("dbData", dbData);
-  const token = dbData.data || "";
+function askByOpenAI(question, options = {}) {
+  const { baseURL = endpoint, model = defaultModel, apiKey = '', stream = false } = options
+  console.log('api:askByOpenAI', question, options)
+
   const client = new OpenAI({
-    baseURL: endpoint,
-    apiKey: token,
+    baseURL,
+    apiKey,
     dangerouslyAllowBrowser: true, // 添加这一行
-  });
-  console.log("question", question, model, client.chat);
-  const response = await client.chat.completions.create({
-    // messages: [
-    //   // { role: "system", content: "You are a helpful assistant." },
-    //   { role: "user", content: question }
-    // ],
+  })
+  return client.chat.completions.create({
     messages: question,
     model,
-    temperature: 1.0,
-    max_tokens: 1000,
-    top_p: 1.0,
-  });
-
-  console.log(response.choices);
-  return {
-    model,
-    stream: false,
-    role: "assistant",
-    content: response.choices[0].message.content,
-  };
+    stream,
+  })
 }
 
-// queryAnswer("中国的首都是哪里？").catch((err) => {
-//   console.error("The sample encountered an error:", err);
-// });
-
 module.exports = {
-  queryAnswer,
-};
+  askByOpenAI,
+}
+
+// mock stream
+// let index = 0;
+// const chunks = '今天是个阳，一的美好，也让我对未来充满了期待。我决定以后要经常来公园，感受大自然的魅力，享受生活的美好。今天是个阳，一的美好，也让我对未来充满了期待。我决定以后要经常来公园，感受大自然的魅力，享受生活的美好。今天是个阳，一的美好，也让我对未来充满了期待。我决定以后要经常来公园，感受大自然的魅力，享受生活的美好。今天是个阳，一的美好，也让我对未来充满了期待。今天是个阳，一的美好，也让我对未来充满了期待。我决定以后要经常来公园，感受大自然的魅力，享受生活的美好。今天是个阳，一的美好，也让我对未来充满了期待。我决定以后要经常来公园，感受大自然的魅力，享受生活的美好。今天是个阳，一的美好，也让我对未来充满了期待。我决定以后要经常来公园，感受大自然的魅力，享受生活的美好。今天是个阳，一的美好，也让我对未来充满了期待。我决定以后要经常来公园，感受大自然的魅力，享受生活的美好。我决定以后要经常来公园，感受大自然的魅力，享受生活的美好。'.split('');
+
+// return {
+//   [Symbol.asyncIterator]() {
+//     return {
+//       next: async () => {
+//         if (index < chunks.length) {
+//           return {
+//             value: {
+//               choices: [
+//                 {
+//                   delta: {
+//                     content: chunks[index++]
+//                   }
+//                 }
+//               ]
+//             },
+//             done: false
+//           };
+//         } else {
+//           return { done: true };
+//         }
+//       }
+//     };
+//   }
+// };

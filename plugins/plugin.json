@@ -8,16 +8,9 @@
   "description": "",
   "features": [
     {
-      "code": "HIAI",
-      "explain": "你好AI",
-      "cmds": [
-        "AI",
-        {
-          "type": "regex",
-          "label": "你好AI",
-          "match": "/^.{5,}$/"
-        }
-      ]
+      "code": "HI_AI",
+      "explain": "你是我的私人助理，请你帮我解答问题",
+      "cmds": ["HI", "AI"]
     }
   ]
 }

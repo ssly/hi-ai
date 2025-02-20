@@ -1,8 +1,9 @@
 <!-- MessageInput.vue -->
 <script setup>
-import { ref, defineEmits, defineProps, watch } from 'vue'
+import { ref, watch } from 'vue'
 import { reactive } from 'vue'
 import ModelSelect from './ModelSelect.vue'
+import { CircleHelp } from 'lucide-vue-next'
 
 const props = defineProps({
   currentSessionId: {
@@ -16,8 +17,6 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['send'])
-
-const selectedModel = ref('gpt-4o-mini')
 
 const isComposition = ref(false)
 
@@ -69,13 +68,25 @@ const handleSend = e => {
         @compositionend="isComposition = false"
         @keydown="handleSend"
       ></textarea>
-      <button :disabled="sending || !message.trim()" class="msg-input-button" @click.stop="handleSend(false)">
-        发送
+      <button
+        :disabled="sending || !message.trim()"
+        class="msg-input-button"
+        @click.stop="handleSend(false)"
+      >
+        <span class="msg-btn">
+          <span class="msg-btn-text">发送</span>
+          <a-tooltip position="tr">
+            <template #content>
+              Enter发送<br />
+              Shift+Enter换行
+            </template>
+            <CircleHelp size="16" />
+          </a-tooltip>
+        </span>
       </button>
     </div>
     <div class="msg-tips">
       <ModelSelect v-model:model="formData.model" />
-      <div class="msg-tips-right">Enter发送&nbsp;&nbsp;Shift+Enter换行</div>
     </div>
   </div>
 </template>
@@ -157,6 +168,12 @@ input[type='radio'] {
   align-items: center;
 }
 
-.msg-tips-right {
+.msg-btn {
+  display: flex;
+  align-items: center;
+}
+
+.msg-btn-text {
+  margin-right: 2px;
 }
 </style>

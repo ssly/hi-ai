@@ -1,44 +1,8 @@
 <!-- ChatWindow.vue -->
-<template>
-  <div class="chat-window" ref="chatWindow">
-    <div class="chat-content">
-      <div v-if="messages.length === 0" class="empty-state">
-        <svg class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
-          />
-        </svg>
-        <p class="title">暂无消息</p>
-        <p class="subtitle">可以在输入框中输入你的问题，AI助手会尽力给出回答。</p>
-        <p class="subtitle">
-          请注意，一个会话窗口里面的内容会做为一个整体一起问AI，如果问的问题和当前上下文无关，建议新创建会话
-        </p>
-      </div>
-      <div v-else v-for="message in messages" :key="message.id">
-        <div class="message" :class="{ user: message.role === 'user', assistant: message.role === 'assistant' }">
-          <p v-if="message.role === 'user'">{{ message.content }}</p>
-          <p v-else v-html="marked(message.content)"></p>
-        </div>
-      </div>
-      <div v-if="showScrollToBottomBtn" class="scroll-to-bottom" @click="scrollToBottom">
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path
-            d="M12 5L12 19M12 19L19 12M12 19L5 12"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-        </svg>
-      </div>
-    </div>
-  </div>
-</template>
 
 <script setup>
 import { marked } from 'marked' // 新增此行
+import { handleOpenUrl } from '../utils'
 import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
 
 const props = defineProps({
@@ -106,6 +70,14 @@ watch(
   { deep: true }
 )
 
+function handleMessageClick(e) {
+  if (e.target.tagName === 'A') {
+    e.preventDefault()
+    const link = e.target.href
+    handleOpenUrl(link)
+  }
+}
+
 onMounted(() => {
   // 初始化时执行一次
   handleScroll()
@@ -116,6 +88,47 @@ onUnmounted(() => {
   chatWindow.value && chatWindow.value.removeEventListener('scroll', handleScroll)
 })
 </script>
+
+<template>
+  <div class="chat-window" ref="chatWindow">
+    <div class="chat-content">
+      <div v-if="messages.length === 0" class="empty-state">
+        <svg class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+          />
+        </svg>
+        <p class="title">暂无消息</p>
+        <p class="subtitle">可以在输入框中输入你的问题，AI助手会尽力给出回答。</p>
+        <p class="subtitle">
+          请注意，一个会话窗口里面的内容会做为一个整体一起问AI，如果问的问题和当前上下文无关，建议新创建会话
+        </p>
+      </div>
+      <div v-else v-for="message in messages" :key="message.id">
+        <div
+          class="message"
+          :class="{ user: message.role === 'user', assistant: message.role === 'assistant' }"
+        >
+          <p v-if="message.role === 'user'">{{ message.content }}</p>
+          <p v-else v-html="marked(message.content)" @click="handleMessageClick"></p>
+        </div>
+      </div>
+      <div v-if="showScrollToBottomBtn" class="scroll-to-bottom" @click="scrollToBottom">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M12 5L12 19M12 19L19 12M12 19L5 12"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </div>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .chat-window {
@@ -129,7 +142,6 @@ onUnmounted(() => {
 .chat-content {
   max-width: 800px;
   margin: 0 auto;
-  height: 100%;
 }
 
 @media (min-width: 1200px) {

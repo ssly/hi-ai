@@ -10,10 +10,7 @@ apiConfig
   groqApiKey: string
   modles: string // 逗号分隔
 }
-
 */
-
-const listeners = {}
 
 let pluginEnterData = {}
 
@@ -34,8 +31,38 @@ window.services = {
 
   // 显示通知
   showNotification: content => {
-    console.log('xxxxx', content)
     utools.showNotification(content)
+  },
+
+  /**
+   * 获取 token
+   * @returns {String}
+   */
+  getToken: () => ({
+    githubToken: utools.db.get('aiConfig')?.githubToken,
+  }),
+
+  /**
+   * 设置 token
+   * @param {String} token
+   */
+  setToken: token => {
+    return utools.db.put({
+      _id: 'aiConfig',
+      githubToken: token.githubToken,
+      _rev: utools.db.get('aiConfig')?._rev,
+    })
+  },
+
+  getSessions: () => utools.db.get('aiSessions')?.sessions || {},
+
+  setSessions: (sessions = {}) => {
+    console.log('preload.js:setSessions:sessions is', sessions)
+    return utools.db.promises.put({
+      _id: 'aiSessions',
+      sessions,
+      _rev: utools.db.get('aiSessions')?._rev,
+    })
   },
 
   // 获取插件进入数据
@@ -45,21 +72,4 @@ window.services = {
 
   // 操作数据库
   db: utools.db,
-
-  // 注册发布订阅
-  listener: {
-    on(key, listener) {
-      if (typeof listener === 'function') {
-        if (!Array.isArray(listeners[key])) {
-          listeners[key] = []
-        }
-        listeners[key].push(listener)
-      }
-    },
-    off(key, listener) {
-      if (Array.isArray(listeners[key])) {
-        listeners[key] = listeners[key].filter(l => l !== listener)
-      }
-    },
-  },
 }

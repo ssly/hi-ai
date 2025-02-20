@@ -1,4 +1,6 @@
-const OpenAI = require('./lib/openai')
+// const OpenAI = require('./lib/openai')
+const OpenAI = require('openai')
+// const https = require('https')
 
 const endpoint = 'https://models.inference.ai.azure.com'
 const defaultModel = 'gpt-4o-mini'

@@ -1,19 +1,7 @@
-<template>
-  <div class="model-select">
-    <!-- <select v-model="platform" @change="onPlatformChange">
-      <option value="github">Github Models</option>
-      <option value="groq">Groq</option>
-    </select> -->
-    <select v-model="model">
-      <option v-for="option in modelOptions" :key="option.value" :value="option.value">
-        {{ option.label }}
-      </option>
-    </select>
-  </div>
-</template>
-
 <script setup>
 import { computed } from 'vue'
+import { RadioGroup, Radio } from '@arco-design/web-vue'
+import { CircleHelp } from 'lucide-vue-next'
 
 const props = defineProps({
   platform: String,
@@ -21,15 +9,6 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:platform', 'update:model'])
-
-const platform = computed({
-  get() {
-    return props.platform
-  },
-  set(value) {
-    emit('update:platform', value)
-  },
-})
 
 const model = computed({
   get() {
@@ -42,13 +21,47 @@ const model = computed({
 
 const modelOptions = computed(() => {
   return [
-    { value: 'gpt-4o-mini', label: 'gpt-4o-mini' },
-    { value: 'gpt-4o', label: 'gpt-4o' },
-    { value: 'o1-mini', label: 'o1-mini' },
-    { value: 'o1-preview', label: 'o1-preview' },
+    {
+      value: 'gpt-4o-mini',
+      label: '4o-mini',
+      desc: ['131k 输入 · 4k 输出', 'Free 150次/天', 'Copilot Business 300次/天', '支持流式输出'],
+    },
+    {
+      value: 'gpt-4o',
+      label: '4o',
+      desc: ['131k 输入 · 16k 输出', 'Free 50次/天', 'Copilot Business 100次/天', '支持流式输出'],
+    },
+    {
+      value: 'o1-mini',
+      label: 'o1-mini',
+      desc: ['128k 输入 · 66k 输出', 'Free 12次/天', 'Copilot Business 15次/天'],
+    },
+    {
+      value: 'o1',
+      label: 'o1',
+      desc: ['200k 输入 · 100k 输出', 'Free 8次/天', 'Copilot Business 10次/天'],
+    },
   ]
 })
 </script>
+
+<template>
+  <div class="model-select">
+    <RadioGroup v-model="model" size="small" type="button">
+      <Radio v-for="option in modelOptions" :key="option.value" :value="option.value">
+        <span class="model-select-label">
+          <span class="model-select-label-text">{{ option.label }}</span>
+          <a-tooltip position="top">
+            <template #content>
+              <div v-for="item in option.desc" :key="item">{{ item }}</div>
+            </template>
+            <CircleHelp size="14" />
+          </a-tooltip>
+        </span>
+      </Radio>
+    </RadioGroup>
+  </div>
+</template>
 
 <style scoped>
 .model-select {
@@ -63,5 +76,14 @@ select {
   border-radius: 4px;
   font-size: 14px;
   outline: none;
+}
+
+.model-select-label {
+  display: flex;
+  align-items: center;
+}
+
+.model-select-label-text {
+  margin-right: 4px;
 }
 </style>

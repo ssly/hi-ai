@@ -1,138 +1,153 @@
 <!-- SideNav.vue -->
 <script setup>
-import { ref, defineProps, computed, nextTick } from 'vue'
+import { ref, computed } from 'vue'
+import { CircleX, ChevronsRight, ChevronsLeft } from 'lucide-vue-next'
 
-const props = defineProps({
-  currentSessionId: {
-    type: Number,
-    required: true,
-  },
-  sessions: {
-    type: Object,
-    required: true,
-  },
-})
+import { useSessionsStore } from '../stores/sessions'
+
+const sessionsStore = useSessionsStore()
 
 const sessionsArray = computed(() => {
-  const list = Object.values(props.sessions)
-  console.log('list', list)
-  console.log(
-    'props.sessions',
-    list.sort((a, b) => b.updateTime - a.updateTime),
-  )
+  const list = Object.values(sessionsStore.sessions)
   return list.sort((a, b) => b.updateTime - a.updateTime)
 })
 
-const emit = defineEmits([
-  'update:currentSessionId',
-  'update:sessions',
-  'create-session',
-  'change-token',
-  'change-session-id',
-])
+const emit = defineEmits(['create-session', 'change-token'])
 
-const currentEditSessionId = ref(null)
 const inputRef = ref(null)
 
-const hanleRemove = (row) => {
-  if (confirm(`确定要删除 ${row.name} 吗?`)) {
-    const newSessions = { ...props.sessions }
-    delete newSessions[row.id]
-    emit('update:sessions', newSessions)
-    emit('remove', newSessions)
-  }
+const isCollopse = ref(true)
+
+const hanleRemove = row => {
+  console.log('hanleRemove', row, row._isRemove, row.id)
+  sessionsStore.removeSession(row)
 }
 
-const handleEditSession = async (session) => {
-  currentEditSessionId.value = session.id
-  await nextTick()
+const handleEditSession = async session => {
+  session._isRename = true
   setTimeout(() => {
     inputRef.value[0].focus()
   }, 0)
 }
 
-const handleChangeSessionName = () => {
-  currentEditSessionId.value = null
+function handleSelectSession(session) {
+  sessionsStore.selectSession(session.id)
+}
+
+const handleChangeSessionName = (event, session) => {
+  delete session._isRename
+
+  sessionsStore.updateSession(session.id, {
+    name: session.name,
+  })
 }
 </script>
 
 <template>
-  <nav class="side-nav">
-    <div class="opt">
+  <nav :class="isCollopse ? 'side-nav is-collapse' : 'side-nav'">
+    <ChevronsRight
+      v-show="!isCollopse"
+      class="side-nav-toggle"
+      size="32"
+      color="#ccc"
+      stroke-width="1"
+      @click="(isCollopse = !isCollopse)"
+    />
+    <ChevronsLeft
+      v-show="isCollopse"
+      class="side-nav-toggle"
+      size="32"
+      color="#ccc"
+      stroke-width="1"
+      @click="(isCollopse = !isCollopse)"
+    />
+
+    <div v-show="isCollopse" class="opt">
       <button @click="emit('change-token')">修改密钥</button>
       <button @click="emit('create-session')">创建会话</button>
     </div>
 
-    <ul>
-      <li
-        v-for="session in sessionsArray"
-        :class="{ 'session-active': currentSessionId === session.id }"
-        :key="session.id"
-        @click="emit('update:currentSessionId', session.id)"
-      >
-        <span class="session-name">
-          <input
-            v-if="currentEditSessionId === session.id"
-            ref="inputRef"
-            class="session-name-input"
-            type="text"
-            v-model="session.name"
-            @change="handleChangeSessionName(session)"
-            @blur="handleChangeSessionName(session)"
-          />
-          <span v-else>{{ session.name || '新会话' }}</span>
-        </span>
-        <div v-if="currentEditSessionId !== session.id" class="session-actions">
-          <button class="icon-button" @click.stop="handleEditSession(session)">
-            <svg viewBox="0 0 24 24" width="18" height="18">
-              <path
-                d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"
-              />
-            </svg>
-          </button>
-          <button class="icon-button" @click="hanleRemove(session)">
-            <svg viewBox="0 0 24 24" width="18" height="18">
-              <path
-                d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
-              />
-            </svg>
-          </button>
-        </div>
-      </li>
-    </ul>
+    <div class="side-nav-content">
+      <ul v-show="isCollopse">
+        <li
+          v-for="session in sessionsArray"
+          :class="{ 'session-active': sessionsStore.currentSessionId === session.id }"
+          :key="session.id"
+          @click="handleSelectSession(session)"
+        >
+          <span class="session-name">
+            <input
+              v-if="session._isRename"
+              ref="inputRef"
+              class="session-name-input"
+              type="text"
+              v-model="session.name"
+              @change="handleChangeSessionName($event, session)"
+              @blur="handleChangeSessionName($event, session)"
+            />
+            <span v-else>{{ session.name || '新会话' }}</span>
+          </span>
+          <div class="session-actions">
+            <button class="icon-button" @click.stop="handleEditSession(session)">
+              <svg viewBox="0 0 24 24" width="18" height="18">
+                <path
+                  d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"
+                />
+              </svg>
+            </button>
+            <button class="icon-button" @click.stop="hanleRemove(session)">
+              <svg v-if="session._isRemove" viewBox="0 0 24 24" width="18" height="18">
+                <path
+                  d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
+                />
+              </svg>
+              <CircleX v-else />
+            </button>
+          </div>
+        </li>
+      </ul>
+    </div>
   </nav>
 </template>
 
 <style scoped>
 .side-nav {
-  position: fixed;
-  top: 0;
-  /* left: 0; */
-  left: -180px;
-  width: 200px;
-  min-width: 200px;
-  background-color: #f8f8f8;
-  border-right: 1px solid #ddd;
+  position: relative;
+  border-right: 1px solid var(--border-color);
+  width: 20px;
   height: 100%;
-  z-index: 1;
-  transition: left 0.2s;
-  display: flex;
-  flex-direction: column;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+.side-nav.is-collapse {
+  width: 200px;
 }
 .side-nav:after {
-  position: absolute;
+  /* position: absolute;
   top: 0;
   width: 20px;
   right: -20px;
   height: 100%;
   background-color: transparent;
-  content: '';
+  content: ''; */
 }
 .side-nav:after:hover {
-  opacity: 0;
+  /* opacity: 0; */
 }
 .side-nav:hover {
-  left: 0;
+  /* left: 0; */
+}
+
+.side-nav-content {
+  overflow-y: auto;
+}
+
+.side-nav-toggle {
+  position: absolute;
+  right: -16px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
 }
 
 ul {

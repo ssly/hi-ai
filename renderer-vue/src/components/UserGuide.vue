@@ -1,38 +1,24 @@
 <script setup>
-import { reactive, defineEmits, defineProps, watch } from 'vue'
+import { reactive } from 'vue'
+import { useTokenStore } from '../stores/token'
 import { handleOpenUrl } from '../utils'
 
-const props = defineProps({
-  config: {
-    type: Object,
-    required: true,
-  },
-})
+const tokenStore = useTokenStore()
 
-const emit = defineEmits(['update', 'cancel'])
+const emit = defineEmits(['cancel'])
 
-const aiConfig = reactive({
+const formData = reactive({
   githubToken: '',
-  // mistraToken: '',
-  // metaToken: '',
 })
-
-watch(
-  () => props.config,
-  (newVal, oldVal) => {
-    console.log('config changed', newVal, oldVal)
-    aiConfig.githubToken = newVal.githubToken
-  },
-  { immediate: true }
-)
 
 function handleUpdateConfig() {
-  console.log('handleUpdateConfig', aiConfig)
-  emit('update', aiConfig)
+  console.log('UserGuide:handleUpdateConfig', formData)
+  tokenStore.updateToken(formData.githubToken)
+  emit('cancel')
 }
 
 function handleCancelConfig() {
-  console.log('handleCancelConfig', aiConfig)
+  console.log('UserGuide:handleCancelConfig')
   emit('cancel')
 }
 </script>
@@ -76,48 +62,32 @@ function handleCancelConfig() {
       </p>
       <p>
         2. Github Models
-        <a href="javascript:void(0)" @click="handleOpenUrl('https://github.com/marketplace/models')">申请地址</a>
-      </p>
-      <p>
-        3. Github Token
-        <a href="javascript:void(0)" @click="handleOpenUrl('https://github.com/settings/tokens')">获取地址</a>
-        （申请一个classic Tokens，下面权限都可以不勾选）
-      </p>
-
-      <input v-model="aiConfig.githubToken" type="password" placeholder="输入 Github token" />
-    </div>
-
-    <!-- <div class="config-section">
-      <h2>Groq 配置</h2>
-      <p>
-        PS: 此 API 调用需要在 uTools 设置里面配置“网络代理”
-      </p>
-      <p>
-        2. Groq API Key
-        <a href="javascript:void(0)" @click="handleOpenUrl('https://console.groq.com/keys')"
+        <a href="javascript:void(0)" @click="handleOpenUrl('https://github.com/marketplace/models')"
           >申请地址</a
         >
       </p>
-      <input v-model="aiConfig.MistraToken" type="password" placeholder="输入 Groq API Key" />
-    </div> -->
-
-    <!-- <div class="config-section">
-      <h2>Meta Configuration</h2>
       <p>
-        Input your Meta token here. You can find or create your Meta token in the
-        <a
-          href="https://developers.facebook.com/tools/explorer/"
-          target="_blank"
-          rel="noopener noreferrer"
-          >Graph API Explorer</a
-        >.
+        3. Github Token
+        <a href="javascript:void(0)" @click="handleOpenUrl('https://github.com/settings/tokens')"
+          >获取地址</a
+        >
+        （申请一个classic Tokens，下面权限都可以不勾选）
       </p>
-      <input v-model="aiConfig.MetaToken" type="password" placeholder="Enter Meta token" />
-    </div> -->
+
+      <input v-model="formData.githubToken" type="password" placeholder="输入 Github token" />
+    </div>
 
     <div class="button-group">
-      <button @click="handleUpdateConfig" class="submit-btn">保存</button>
-      <button @click="handleCancelConfig" class="cancel-btn">取消</button>
+      <button :disabled="!formData.githubToken" class="submit-btn" @click="handleUpdateConfig">
+        保存
+      </button>
+      <button
+        v-if="tokenStore.token || formData.githubToken"
+        @click="handleCancelConfig"
+        class="cancel-btn"
+      >
+        取消
+      </button>
     </div>
   </div>
 </template>
@@ -175,6 +145,11 @@ button {
 
 button:hover {
   background-color: var(--primary-color);
+}
+
+button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
 }
 
 button + button {

@@ -1,6 +1,6 @@
 {
   "type": "commonjs",
   "dependencies": {
-    "openai": "4.62.0"
+    "openai": "^4.62.0"
   }
 }

@@ -1,0 +1,157 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+.container {
+  display: flex;
+  height: 100vh;
+}
+
+.sidebar {
+  width: 200px;
+  background-color: #f0f0f0;
+  padding: 20px;
+}
+
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  overflow: hidden; /* 添加 overflow: hidden 以隐藏超出的内容 */
+}
+
+#chat-window {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto; /* 允许垂直滚动 */
+  border: 1px solid #ccc;
+  padding: 10px;
+}
+
+.input-area {
+  display: flex;
+  margin-top: 20px;
+  position: sticky; /* 将发送框固定在底部 */
+  bottom: 0;
+  background-color: white; /* 设置背景颜色以遮盖聊天内容 */
+  padding: 10px 0; /* 添加上下内边距以与聊天内容分隔 */
+}
+
+#user-input {
+  flex: 1;
+  padding: 10px;
+  font-size: 16px;
+  line-height: 1.5;
+  resize: none;
+  height: 100px; /* 增加输入框的高度 */
+}
+
+#send-button {
+  padding: 10px 20px;
+  font-size: 16px;
+}
+
+.conversation-item {
+  padding: 10px;
+  cursor: pointer;
+}
+
+.conversation-item.active {
+  background-color: #ddd;
+}
+
+.message {
+  margin-bottom: 10px;
+  padding: 10px;
+  border-radius: 10px;
+  max-width: 70%;
+  position: relative; /* 添加相对定位 */
+}
+
+.user-message {
+  background-color: #007aff;
+  color: white;
+  align-self: flex-end;
+}
+
+.assistant-message {
+  background-color: #f0f0f0;
+  align-self: flex-start;
+}
+
+.empty-message {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  font-size: 18px;
+  color: #999;
+}
+
+#empty-message {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  font-size: 18px;
+  color: #999;
+}
+
+#chat-container {
+  display: none;
+  flex: 1;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+#chat-container.active {
+  display: flex;
+}
+
+#model-select {
+  margin-right: 10px;
+  padding: 5px;
+  font-size: 14px;
+}
+
+.model {
+  font-size: 12px;
+  color: #999;
+  position: absolute; /* 添加绝对定位 */
+  bottom: 5px; /* 距离底部 5px */
+  right: 10px; /* 距离右侧 10px */
+}
+
+.chat-container {
+  width: 400px;
+  margin: 50px auto;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+}
+
+.messages {
+  max-height: 300px;
+  overflow-y: auto;
+  margin-bottom: 10px;
+}
+
+.input {
+  width: calc(100% - 80px);
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.send-button {
+  padding: 10px;
+  border: none;
+  background-color: #007bff;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+}

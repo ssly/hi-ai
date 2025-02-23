@@ -12,7 +12,7 @@ export const useSessionsStore = defineStore('sessions', () => {
 
   sessions.value = inUtools
     ? window.services.getSessions()
-    : JSON.parse(localStorage.getItem('aiSessions'))
+    : JSON.parse(localStorage.getItem('aiSessions') || '{}')
 
   console.log('useSessionsStore:session.js:sessions.value is', sessions.value)
 

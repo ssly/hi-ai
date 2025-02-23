@@ -9,7 +9,7 @@ const sessionsStore = useSessionsStore()
 
 const sessionsArray = computed(() => {
   const list = Object.values(sessionsStore.sessions)
-  return list.sort((a, b) => b.updateTime - a.updateTime)
+  return list?.sort((a, b) => b.updateTime - a.updateTime)
 })
 
 const emit = defineEmits(['create-session', 'change-token'])
